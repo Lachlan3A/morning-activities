@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Thursday Morning — Week 6</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #2563EB; --blue-light: #DBEAFE; --blue-dark: #1D4ED8;
+    --green: #16A34A; --green-light: #DCFCE7;
+    --amber: #D97706; --amber-light: #FEF3C7;
+    --purple: #7C3AED; --purple-light: #EDE9FE;
+    --red: #DC2626; --orange: #EA580C; --orange-light: #FFF7ED;
+    --bg: #EFF6FF; --card: #FFFFFF; --text: #1A1A2E; --muted: #6B7280; --border: #BFDBFE;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .top-bar { background: var(--blue); color: white; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .top-bar h1 { font-size: 20px; font-weight: 800; }
+  .top-bar .day { font-size: 13px; opacity: 0.85; }
+  .prog-wrap { background: rgba(255,255,255,0.3); border-radius: 20px; height: 8px; width: 130px; margin-top: 4px; }
+  .prog-fill { background: white; height: 8px; border-radius: 20px; transition: width 0.4s; }
+  .page { padding: 16px; max-width: 580px; margin: 0 auto; }
+  .score-bar { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .score-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .score-val { font-size: 20px; font-weight: 800; color: var(--blue); }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin: 18px 0 10px; }
+  .card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 2px solid var(--border); }
+  .qnum { display: inline-block; background: var(--blue); color: white; font-size: 12px; font-weight: 800; padding: 2px 10px; border-radius: 20px; margin-bottom: 8px; }
+  .q-text { font-size: 15px; font-weight: 600; line-height: 1.5; margin-bottom: 12px; }
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .options.single { grid-template-columns: 1fr; }
+  .opt { padding: 10px 14px; border: 2px solid #E5E7EB; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.15s; background: white; color: var(--text); }
+  .opt:hover { border-color: var(--blue); background: var(--blue-light); }
+  .opt.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
+  .opt.wrong { border-color: var(--red); background: #FEE2E2; color: var(--red); }
+  .opt.disabled { pointer-events: none; opacity: 0.5; }
+  .fb { margin-top: 10px; padding: 10px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; display: none; }
+  .fb.show { display: block; }
+  .fb.correct { background: var(--green-light); color: var(--green); }
+  .fb.wrong { background: #FEE2E2; color: var(--red); }
+  .fill-in { width: 100%; padding: 10px 14px; font-size: 16px; font-family: 'Nunito', sans-serif; border: 2px solid #E5E7EB; border-radius: 12px; margin-bottom: 8px; color: var(--text); }
+  .fill-in:focus { outline: none; border-color: var(--blue); }
+  .fill-in.correct { border-color: var(--green); background: var(--green-light); }
+  .fill-in.wrong { border-color: var(--red); background: #FEE2E2; }
+  .check-btn { padding: 9px 20px; background: var(--blue); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: 'Nunito', sans-serif; cursor: pointer; }
+  .check-btn:hover { background: var(--blue-dark); }
+  .word-box { font-size: 20px; font-weight: 800; color: var(--blue); background: var(--blue-light); border: 2px solid var(--blue); border-radius: 10px; padding: 8px 16px; display: inline-block; margin-bottom: 10px; letter-spacing: 0.04em; }
+  .editing-box { font-size: 15px; padding: 10px 14px; background: #FEF2F2; border: 2px solid #FECACA; border-radius: 12px; margin-bottom: 10px; font-weight: 600; line-height: 1.6; }
+  .animal-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .a-card { border: 2px solid #E5E7EB; border-radius: 12px; padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.2s; font-size: 13px; font-weight: 700; }
+  .a-card .em { font-size: 26px; display: block; margin-bottom: 4px; }
+  .a-card:hover { border-color: var(--blue); background: var(--blue-light); }
+  .a-card.right { border-color: var(--green); background: var(--green-light); color: var(--green); pointer-events: none; }
+  .a-card.wrong { border-color: var(--red); background: #FEE2E2; color: var(--red); pointer-events: none; }
+  .a-card.show-c { border-color: var(--green); background: var(--green-light); color: var(--green); pointer-events: none; }
+  .a-card.locked { pointer-events: none; opacity: 0.5; }
+  .rigorous-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+  .rigorous-overlay.show { display: flex; }
+  .rigorous-modal { background: white; border-radius: 20px; padding: 24px; max-width: 420px; width: 100%; border: 3px solid var(--orange); }
+  .rig-badge { display: inline-block; background: var(--orange); color: white; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 20px; margin-bottom: 10px; }
+  .rig-title { font-size: 17px; font-weight: 800; color: var(--orange); margin-bottom: 6px; }
+  .rig-q { font-size: 15px; font-weight: 600; line-height: 1.5; margin-bottom: 14px; color: var(--text); }
+  .rig-opts { display: flex; flex-direction: column; gap: 8px; }
+  .rig-opt { padding: 10px 14px; border: 2px solid #E5E7EB; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .rig-opt:hover { border-color: var(--orange); background: var(--orange-light); }
+  .rig-opt.correct { border-color: var(--green); background: var(--green-light); color: var(--green); pointer-events: none; }
+  .rig-opt.wrong { border-color: var(--red); background: #FEE2E2; color: var(--red); pointer-events: none; }
+  .rig-fb { margin-top: 10px; padding: 10px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; display: none; }
+  .rig-fb.show { display: block; }
+  .rig-fb.correct { background: var(--green-light); color: var(--green); }
+  .rig-fb.wrong { background: #FEE2E2; color: var(--red); }
+  .rig-close { margin-top: 14px; width: 100%; padding: 10px; background: var(--text); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: 'Nunito', sans-serif; cursor: pointer; display: none; }
+  .pair-share { background: linear-gradient(135deg, #FEF3C7, #FDE68A); border: 2px solid var(--amber); border-radius: 16px; padding: 16px; margin-top: 16px; }
+  .pair-share h3 { font-size: 15px; font-weight: 800; color: var(--amber); margin-bottom: 6px; }
+  .pair-share p { font-size: 14px; font-weight: 600; color: #92400E; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <div><h1>Thursday Morning</h1><div class="day">Week 6 · Nature of Life</div></div>
+  <div style="text-align:right">
+    <div style="font-size:12px;margin-bottom:4px">Progress</div>
+    <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+  </div>
+</div>
+<div class="page">
+  <div class="score-bar">
+    <span class="score-label">Score</span>
+    <span class="score-val" id="score-display">0 / 17</span>
+  </div>
+
+  <div class="section-title">Part 1 — Spelling Practice</div>
+
+  <div class="card" data-qid="q1">
+    <span class="qnum">Q1</span>
+    <div class="q-text">Unscramble: <span class="word-box">ppingdor</span><br><em>"Stop ___ the ball!"</em></div>
+    <input class="fill-in" id="q1-in" placeholder="Type here...">
+    <button class="check-btn" onclick="fill('q1','dropping')">Check</button>
+    <div class="fb" id="q1-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q2">
+    <span class="qnum">Q2</span>
+    <div class="q-text">Which TWO words are spelled correctly?</div>
+    <div class="options single" id="q2">
+      <div class="opt" onclick="mc('q2',this,'coming and joking','coming and joking')">coming and joking ✓</div>
+      <div class="opt" onclick="mc('q2',this,'comming and jokking','coming and joking')">comming and jokking ✗</div>
+      <div class="opt" onclick="mc('q2',this,'comeing and joking','coming and joking')">comeing and joking ✗</div>
+      <div class="opt" onclick="mc('q2',this,'coming and jokeing','coming and joking')">coming and jokeing ✗</div>
+    </div>
+    <div class="fb" id="q2-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q3">
+    <span class="qnum">Q3</span>
+    <div class="q-text">Unscramble: <span class="word-box">dvitnei</span><br><em>"They were ___ to the birthday party."</em></div>
+    <input class="fill-in" id="q3-in" placeholder="Type here...">
+    <button class="check-btn" onclick="fill('q3','invited')">Check</button>
+    <div class="fb" id="q3-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q4">
+    <span class="qnum">Q4</span>
+    <div class="q-text">Choose the correctly spelled word to complete the sentence:<br><em>"Grade 3 ___ a trip to the zoo."</em></div>
+    <div class="options" id="q4">
+      <div class="opt" onclick="mc('q4',this,'planed','planned')">planed</div>
+      <div class="opt" onclick="mc('q4',this,'planned','planned')">planned</div>
+      <div class="opt" onclick="mc('q4',this,'plannned','planned')">plannned</div>
+      <div class="opt" onclick="mc('q4',this,'plann','planned')">plann</div>
+    </div>
+    <div class="fb" id="q4-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q5">
+    <span class="qnum">Q5</span>
+    <div class="q-text">Unscramble: <span class="word-box">gnieezrf</span><br><em>"The water is ___."</em></div>
+    <input class="fill-in" id="q5-in" placeholder="Type here...">
+    <button class="check-btn" onclick="fill('q5','freezing')">Check</button>
+    <div class="fb" id="q5-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q6">
+    <span class="qnum">Q6</span>
+    <div class="q-text">Which sentence uses <strong>"stared"</strong> correctly?</div>
+    <div class="options single" id="q6">
+      <div class="opt" onclick="mc('q6',this,'He stared in amazement.','He stared in amazement.')">He stared in amazement.</div>
+      <div class="opt" onclick="mc('q6',this,'He stareed in amazement.','He stared in amazement.')">He stareed in amazement.</div>
+      <div class="opt" onclick="mc('q6',this,'He stard in amazement.','He stared in amazement.')">He stard in amazement.</div>
+    </div>
+    <div class="fb" id="q6-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q7">
+    <span class="qnum">Q7</span>
+    <div class="q-text">Unscramble: <span class="word-box">chginnag</span><br><em>"The weather is ___."</em></div>
+    <input class="fill-in" id="q7-in" placeholder="Type here...">
+    <button class="check-btn" onclick="fill('q7','changing')">Check</button>
+    <div class="fb" id="q7-fb"></div>
+  </div>
+
+  <div class="section-title">Part 2 — Adverbs to Compare</div>
+
+  <div class="card" data-qid="q8">
+    <span class="qnum">Q8</span>
+    <div class="q-text">The adverb <strong>"quickly"</strong> ends in -ly. How do we compare two people using it?</div>
+    <div class="options single" id="q8">
+      <div class="opt" onclick="mc('q8',this,'He runs quicklier than her.','He runs more quickly than her.')">He runs quicklier than her.</div>
+      <div class="opt" onclick="mc('q8',this,'He runs more quickly than her.','He runs more quickly than her.')">He runs more quickly than her.</div>
+      <div class="opt" onclick="mc('q8',this,'He runs most quickly than her.','He runs more quickly than her.')">He runs most quickly than her.</div>
+    </div>
+    <div class="fb" id="q8-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q9">
+    <span class="qnum">Q9</span>
+    <div class="q-text"><strong>"Hard"</strong> does NOT end in -ly. Complete the sentence:<br><em>"She works ___ than him."</em></div>
+    <input class="fill-in" id="q9-in" placeholder="Type here...">
+    <button class="check-btn" onclick="fill('q9','harder')">Check</button>
+    <div class="fb" id="q9-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q10">
+    <span class="qnum">Q10</span>
+    <div class="q-text">Which sentence is correct? Remember the rule for irregular adverbs!</div>
+    <div class="options single" id="q10">
+      <div class="opt" onclick="mc('q10',this,'She sings more well than he does.','She sings better than he does.')">She sings more well than he does.</div>
+      <div class="opt" onclick="mc('q10',this,'She sings better than he does.','She sings better than he does.')">She sings better than he does.</div>
+      <div class="opt" onclick="mc('q10',this,'She sings weller than he does.','She sings better than he does.')">She sings weller than he does.</div>
+    </div>
+    <div class="fb" id="q10-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q11">
+    <span class="qnum">Q11</span>
+    <div class="q-text">Complete the sentence using an adverb to compare. Use the word <strong>noisily</strong>:<br><em>"She shouts ___ ___ than he does."</em></div>
+    <input class="fill-in" id="q11-in" placeholder="Type here...">
+    <button class="check-btn" onclick="fill('q11','more noisily')">Check</button>
+    <div class="fb" id="q11-fb"></div>
+  </div>
+
+  <div class="section-title">Part 3 — Editing and Revising</div>
+
+  <div class="card" data-qid="q12">
+    <span class="qnum">Q12</span>
+    <div class="q-text">Find the mistake:</div>
+    <div class="editing-box">brush your molars because these teeth crush and chew your food.</div>
+    <div class="options" id="q12">
+      <div class="opt" onclick="mc('q12',this,'Missing full stop','Missing capital letter at the start')">Missing full stop</div>
+      <div class="opt" onclick="mc('q12',this,'Missing capital letter at the start','Missing capital letter at the start')">Missing capital letter</div>
+      <div class="opt" onclick="mc('q12',this,'Wrong verb tense','Missing capital letter at the start')">Wrong verb tense</div>
+      <div class="opt" onclick="mc('q12',this,'Spelling mistake','Missing capital letter at the start')">Spelling mistake</div>
+    </div>
+    <div class="fb" id="q12-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q13">
+    <span class="qnum">Q13</span>
+    <div class="q-text">Which sentence has better detail? Think about adjectives!</div>
+    <div class="options single" id="q13">
+      <div class="opt" onclick="mc('q13',this,'Put toothpaste on your toothbrush.','Squeeze a pea-sized amount of minty toothpaste on your electric toothbrush.')">Put toothpaste on your toothbrush.</div>
+      <div class="opt" onclick="mc('q13',this,'Squeeze a pea-sized amount of minty toothpaste on your electric toothbrush.','Squeeze a pea-sized amount of minty toothpaste on your electric toothbrush.')">Squeeze a pea-sized amount of minty toothpaste on your electric toothbrush.</div>
+    </div>
+    <div class="fb" id="q13-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q14">
+    <span class="qnum">Q14</span>
+    <div class="q-text">Fix the verb tense mistake:</div>
+    <div class="editing-box">Make sure you puts your toothbrush away.</div>
+    <div class="options single" id="q14">
+      <div class="opt" onclick="mc('q14',this,'Make sure you put your toothbrush away.','Make sure you put your toothbrush away.')">Make sure you put your toothbrush away.</div>
+      <div class="opt" onclick="mc('q14',this,'Make sure you putting your toothbrush away.','Make sure you put your toothbrush away.')">Make sure you putting your toothbrush away.</div>
+      <div class="opt" onclick="mc('q14',this,'Make sure you puts your toothbrush away.','Make sure you put your toothbrush away.')">Make sure you puts your toothbrush away.</div>
+    </div>
+    <div class="fb" id="q14-fb"></div>
+  </div>
+
+  <div class="section-title">Part 4 — Animal Classification</div>
+
+  <div class="card" data-qid="q15">
+    <span class="qnum">Q15</span>
+    <div class="q-text">Which animal is a <strong>mammal</strong>? Tap it!</div>
+    <div class="animal-grid" id="q15">
+      <div class="a-card" onclick="anml('q15',this,'Eagle','Whale')"><span class="em">🦅</span>Eagle</div>
+      <div class="a-card" onclick="anml('q15',this,'Crocodile','Whale')"><span class="em">🐊</span>Crocodile</div>
+      <div class="a-card" onclick="anml('q15',this,'Whale','Whale')"><span class="em">🐋</span>Whale</div>
+      <div class="a-card" onclick="anml('q15',this,'Frog','Whale')"><span class="em">🐸</span>Frog</div>
+      <div class="a-card" onclick="anml('q15',this,'Salmon','Whale')"><span class="em">🐟</span>Salmon</div>
+      <div class="a-card" onclick="anml('q15',this,'Spider','Whale')"><span class="em">🕷️</span>Spider</div>
+    </div>
+    <div class="fb" id="q15-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q16">
+    <span class="qnum">Q16</span>
+    <div class="q-text">A frog lives in water AND on land. What group does it belong to?</div>
+    <div class="options" id="q16">
+      <div class="opt" onclick="mc('q16',this,'Reptile','Amphibian')">Reptile</div>
+      <div class="opt" onclick="mc('q16',this,'Amphibian','Amphibian')">Amphibian</div>
+      <div class="opt" onclick="mc('q16',this,'Fish','Amphibian')">Fish</div>
+      <div class="opt" onclick="mc('q16',this,'Mammal','Amphibian')">Mammal</div>
+    </div>
+    <div class="fb" id="q16-fb"></div>
+  </div>
+
+  <div class="card" data-qid="q17">
+    <span class="qnum">Q17</span>
+    <div class="q-text">A spider has 8 legs and no backbone. What group does it belong to?</div>
+    <div class="options" id="q17">
+      <div class="opt" onclick="mc('q17',this,'Reptile','Invertebrate')">Reptile</div>
+      <div class="opt" onclick="mc('q17',this,'Mammal','Invertebrate')">Mammal</div>
+      <div class="opt" onclick="mc('q17',this,'Bird','Invertebrate')">Bird</div>
+      <div class="opt" onclick="mc('q17',this,'Invertebrate','Invertebrate')">Invertebrate</div>
+    </div>
+    <div class="fb" id="q17-fb"></div>
+  </div>
+
+  <div class="pair-share">
+    <h3>Pair Share Time!</h3>
+    <p>With your partner, pick any animal. One person says what group it belongs to. The other must give THREE reasons why. Then swap animals and try again!</p>
+  </div>
+</div>
+
+<div class="rigorous-overlay" id="rig-overlay">
+  <div class="rigorous-modal">
+    <span class="rig-badge">RIGOROUS LEARNING</span>
+    <div class="rig-title" id="rig-title">⚡ You answered super fast!</div>
+    <div class="rig-q" id="rig-q"></div>
+    <div class="rig-opts" id="rig-opts"></div>
+    <div class="rig-fb" id="rig-fb"></div>
+    <button class="rig-close" id="rig-close" onclick="closeRig()">Continue</button>
+  </div>
+</div>
+
+<script>
+let score = 0, answered = {}, rigAnswered = {}, rigActive = false, currentRigQid = null, answerStartTime = {};
+const total = 17;
+
+const rigorous = {
+  q1: { q: "Why does 'drop' double the 'p' before -ing, but 'jump' doesn't?", opts: ["Drop is shorter than jump", "Drop ends in consonant-vowel-consonant (CVC), jump ends in two consonants", "It's a random exception", "Jump is an irregular verb"], ans: "Drop ends in consonant-vowel-consonant (CVC), jump ends in two consonants", fb: "The CVC rule is the key! d-r-o-p = CVC at the end, so double. j-u-m-p ends in two consonants, so don't." },
+  q2: { q: "Why don't we add an extra 'm' to 'coming'? (come → coming)", opts: ["Because come is a short word", "Because 'come' ends in a silent 'e', so we just drop the 'e' and add -ing", "Because it would look strange", "Because -ing already has a vowel in it"], ans: "Because 'come' ends in a silent 'e', so we just drop the 'e' and add -ing", fb: "Exactly! Words ending in silent 'e': drop the 'e' then add -ing. Come→coming, save→saving, joke→joking." },
+  q3: { q: "The word 'invite' ends in 'e'. What rule did we use to make 'invited'?", opts: ["Double the last letter", "Drop the silent 'e' before adding -ed", "Just add -ed with no changes", "Change the 'e' to 'i'"], ans: "Drop the silent 'e' before adding -ed", fb: "Spot on! invite → invited. Drop the 'e', add -ed. Same rule as: love→loved, stare→stared, taste→tasted." },
+  q4: { q: "Plan → Planned. Can → Canned? Is this right?", opts: ["No, can just adds -ed to make caned", "Yes, can doubles the 'n' to make canned", "No, can doesn't change — caned is correct", "Yes but only for food cans, not the verb"], ans: "Yes, can doubles the 'n' to make canned", fb: "Correct! Can follows the same CVC rule as plan — both double the final consonant before -ed." },
+  q5: { q: "The word 'freeze' has a 'z' sound but is spelled with 'ze'. What other words follow this pattern?", opts: ["size, prize, breeze", "fish, wish, dish", "cat, bat, rat", "walk, talk, chalk"], ans: "size, prize, breeze", fb: "Right! Words like freeze, breeze, sneeze, squeeze all share the 'eeze' pattern." },
+  q6: { q: "If someone 'stared', it happened in the past. How would you say it's happening NOW?", opts: ["He is stare", "He is stared", "He is staring", "He stares now"], ans: "He is staring", fb: "Perfect tense awareness! Past: stared. Present/now: is staring. Always drop the 'e' before -ing." },
+  q7: { q: "Why do we drop the 'e' in 'change' before adding -ing?", opts: ["Because 'e' is a weak letter", "Because words ending in silent 'e' drop the 'e' before adding -ing or -ed", "It's just a tradition", "To make the word shorter"], ans: "Because words ending in silent 'e' drop the 'e' before adding -ing or -ed", fb: "Yes! change→changing, save→saving, love→loved. The silent 'e' rule is very consistent!" },
+  q8: { q: "Why do we say 'more quickly' but not 'more fast'?", opts: ["Because 'quickly' ends in -ly, so we use 'more'. 'Fast' doesn't end in -ly, so we say 'faster'.", "Because 'fast' is an irregular adverb.", "Both are wrong — we should say 'fastest'.", "There is no rule — both ways are fine."], ans: "Because 'quickly' ends in -ly, so we use 'more'. 'Fast' doesn't end in -ly, so we say 'faster'.", fb: "Exactly the rule! -ly endings → use 'more'. Non -ly endings → add -er. Exceptions: well→better, far→further." },
+  q9: { q: "Write your OWN comparison sentence using 'hard' as an adverb:", opts: ["My mum works harder than my dad.", "My dad is harder than my mum.", "Hard working is important for everyone.", "She more hard than him."], ans: "My mum works harder than my dad.", fb: "Well done! Subject + verb + harder + than + person is the correct pattern for non -ly adverbs." },
+  q10: { q: "The irregular adverb 'well' becomes 'better'. What does 'far' become when comparing?", opts: ["farer", "more far", "further or farther", "far-er"], ans: "further or farther", fb: "Correct! Far → further/farther. These are the two main irregular adverbs: well→better, far→further/farther." },
+  q11: { q: "Write a comparison sentence about two animals using ANY adverb from this week:", opts: ["A cheetah runs more quickly than a tortoise.", "Cheetahs and tortoises both run the same speed.", "A cheetah is faster than a tortoise walks.", "A tortoise runs more quickly than a cheetah."], ans: "A cheetah runs more quickly than a tortoise.", fb: "Great example! Subject + verb + more + adverb(-ly) + than + subject is the correct comparison pattern." },
+  q12: { q: "In instructional writing we use imperative (bossy) verbs. Which sentence uses an imperative verb?", opts: ["You should brush your teeth.", "Brushing teeth is important.", "Brush your teeth every morning.", "I like to brush my teeth."], ans: "Brush your teeth every morning.", fb: "Correct! 'Brush' is an imperative verb — it gives a direct instruction. Instructional writing always uses these." },
+  q13: { q: "A 'hook' is the first sentence of your introduction. What makes a good hook?", opts: ["Start with 'My name is...'", "Start with 'In this essay...'", "Start with an interesting question or surprising fact that grabs attention", "Start with the list of things you need"], ans: "Start with an interesting question or surprising fact that grabs attention", fb: "Exactly! A hook makes the reader want to keep reading. Examples: 'Did you know...?' or 'Have you ever wondered...?'" },
+  q14: { q: "Your conclusion should include two things. What are they?", opts: ["A list and a diagram", "A question to the reader and a hope/wish statement", "The title and your name", "The steps again and a full stop"], ans: "A question to the reader and a hope/wish statement", fb: "Right! Example: 'Are you ready to try this?' + 'I hope this helped you learn how to...' Wrap it up with energy!" },
+  q15: { q: "A whale lives in the ocean. Why is it a mammal and NOT a fish?", opts: ["Because it is very large", "Because it breathes air, is warm-blooded, and feeds babies with milk — like all mammals", "Because it has fins like a fish", "Because it lives near the surface of the water"], ans: "Because it breathes air, is warm-blooded, and feeds babies with milk — like all mammals", fb: "Brilliant scientific thinking! A whale LOOKS like a fish but is a mammal — classification is about biology, not appearance." },
+  q16: { q: "A frog starts life breathing through gills (like a fish) and later grows lungs. Why does this make it an amphibian?", opts: ["Because it changes color", "Because it can breathe both in water (gills) and on land (lungs) at different life stages", "Because it is small and green", "Because it lives near ponds"], ans: "Because it can breathe both in water (gills) and on land (lungs) at different life stages", fb: "Excellent! The word 'amphibian' comes from Greek meaning 'double life' — they live in two worlds!" },
+  q17: { q: "An invertebrate has no backbone. How would you know if YOU are a vertebrate or invertebrate?", opts: ["I have no idea — I'd need a doctor", "I am a vertebrate because I have a spine (backbone) running down my back", "I am an invertebrate because I am small", "I would need to look at my skin"], ans: "I am a vertebrate because I have a spine (backbone) running down my back", fb: "You're a vertebrate! You can feel your backbone running down the middle of your back. All humans are vertebrates — mammals too." },
+};
+
+function updateScore() {
+  document.getElementById('score-display').textContent = score + ' / ' + total;
+  document.getElementById('prog').style.width = Math.round((Object.keys(answered).length / total) * 100) + '%';
+}
+function maybeRig(qid) {
+  const elapsed = (Date.now() - (answerStartTime[qid] || Date.now())) / 1000;
+  if (elapsed < 8 && rigorous[qid] && !rigAnswered[qid] && !rigActive) setTimeout(() => showRig(qid), 600);
+}
+function showRig(qid) {
+  rigActive = true; currentRigQid = qid;
+  const r = rigorous[qid];
+  document.getElementById('rig-q').textContent = r.q;
+  const optsEl = document.getElementById('rig-opts');
+  optsEl.innerHTML = '';
+  document.getElementById('rig-fb').className = 'rig-fb';
+  document.getElementById('rig-close').style.display = 'none';
+  r.opts.forEach(opt => {
+    const d = document.createElement('div'); d.className = 'rig-opt'; d.textContent = opt;
+    d.onclick = () => answerRig(d, opt, r.ans, r.fb);
+    optsEl.appendChild(d);
+  });
+  document.getElementById('rig-overlay').classList.add('show');
+}
+function answerRig(el, chosen, correct, fb) {
+  if (rigAnswered[currentRigQid]) return;
+  rigAnswered[currentRigQid] = true;
+  document.querySelectorAll('.rig-opt').forEach(o => { o.className = o.textContent === correct ? 'rig-opt correct' : 'rig-opt wrong'; });
+  const fbEl = document.getElementById('rig-fb');
+  fbEl.textContent = (chosen === correct ? '🌟 ' : '❌ ') + fb;
+  fbEl.className = 'rig-fb show ' + (chosen === correct ? 'correct' : 'wrong');
+  document.getElementById('rig-close').style.display = 'block';
+}
+function closeRig() { document.getElementById('rig-overlay').classList.remove('show'); rigActive = false; currentRigQid = null; }
+function mc(qid, el, chosen, correct) {
+  if (answered[qid]) return; answered[qid] = true;
+  document.getElementById(qid).querySelectorAll('.opt').forEach(o => { o.classList.add('disabled'); if (o.textContent.trim() === correct) o.classList.add('correct'); });
+  el.className = chosen === correct ? 'opt correct' : 'opt wrong';
+  const fb = document.getElementById(qid + '-fb');
+  if (chosen === correct) { fb.textContent = '🎉 Correct!'; fb.className = 'fb show correct'; score++; }
+  else { fb.textContent = '❌ Not quite. Answer: ' + correct; fb.className = 'fb show wrong'; }
+  updateScore(); maybeRig(qid);
+}
+function fill(qid, correct) {
+  if (answered[qid]) return; answered[qid] = true;
+  const input = document.getElementById(qid + '-in'); input.disabled = true;
+  const val = input.value.trim().toLowerCase();
+  const fb = document.getElementById(qid + '-fb');
+  const ok = val === correct.toLowerCase();
+  input.className = 'fill-in ' + (ok ? 'correct' : 'wrong');
+  if (ok) { fb.textContent = '🎉 Correct!'; fb.className = 'fb show correct'; score++; }
+  else { fb.textContent = '❌ Answer: ' + correct; fb.className = 'fb show wrong'; }
+  updateScore(); maybeRig(qid);
+}
+function anml(qid, el, chosen, correct) {
+  if (answered[qid]) return; answered[qid] = true;
+  document.getElementById(qid).querySelectorAll('.a-card').forEach(c => { c.classList.add('locked'); if (c.textContent.trim().includes(correct)) c.className = 'a-card show-c'; });
+  el.className = chosen === correct ? 'a-card right' : 'a-card wrong';
+  const fb = document.getElementById(qid + '-fb');
+  if (chosen === correct) { fb.textContent = '🎉 Correct! A whale is a mammal — it breathes air and feeds babies with milk!'; fb.className = 'fb show correct'; score++; }
+  else { fb.textContent = '❌ Not quite! A whale is the mammal here.'; fb.className = 'fb show wrong'; }
+  updateScore(); maybeRig(qid);
+}
+document.querySelectorAll('.card[data-qid]').forEach(card => {
+  const qid = card.getAttribute('data-qid');
+  new IntersectionObserver(entries => { if (entries[0].isIntersecting && !answerStartTime[qid]) answerStartTime[qid] = Date.now(); }, { threshold: 0.5 }).observe(card);
+});
+updateScore();
+</script>
+</body>
+</html>
